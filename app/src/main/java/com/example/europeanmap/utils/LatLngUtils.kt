@@ -20,7 +20,7 @@ object LatLngUtils {
      *
      * @return Distance in kilometers
      */
-    fun LatLng.distanceBetween(destination: LatLng?) : Double? {
+    fun LatLng.distanceBetween(destination: LatLng?): Double? {
         destination?.let {
             val dLat = Math.toRadians(destination.latitude - this.latitude)
             val dLon = Math.toRadians(destination.longitude - this.longitude)

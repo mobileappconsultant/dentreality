@@ -8,10 +8,10 @@ import com.example.europeanmap.utils.CountryMapper
 import com.example.europeanmap.utils.LatLngUtils.distanceBetween
 import com.example.europeanmap.utils.SharedPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(

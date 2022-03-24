@@ -90,7 +90,8 @@ class MainActivity : ComponentActivity() {
                                     viewModel.setHome(home)
                                 }
                             }
-                        }, sheetPeekHeight = 0.dp
+                        },
+                        sheetPeekHeight = 0.dp
                     ) {
                         GoogleMap(
                             modifier = Modifier.fillMaxSize(),
@@ -117,7 +118,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-
                 }
             }
         }
@@ -169,9 +169,11 @@ fun CountrySheet(country: Country, setAsHomeClicked: (Country) -> Unit) {
             }
             if (country.isHome.not()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {
-                    setAsHomeClicked(country)
-                }) {
+                Button(
+                    onClick = {
+                        setAsHomeClicked(country)
+                    }
+                ) {
                     Text(text = "Set as Home")
                 }
             } else {
