@@ -11,5 +11,5 @@ import dagger.hilt.components.SingletonComponent
 object ApplicationModule {
 
     @Provides
-    fun provideGson() : Gson = Gson()
+    fun provideGson(): Gson = Gson()
 }

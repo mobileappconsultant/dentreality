@@ -3,6 +3,7 @@ plugins {
 }
 
 buildscript {
+    apply(from= "githooks.gradle")
     repositories {
         gradlePluginPortal()
         google()
