@@ -1,9 +1,10 @@
-package com.example.europeanmap
+package com.example.europeanmap.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.BottomSheetState
 import androidx.compose.material.BottomSheetValue
+import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -25,20 +27,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.europeanmap.ui.model.Country
 import com.example.europeanmap.ui.theme.EuropeanMapTheme
-import com.example.europeanmap.usecases.model.Country
 import com.example.europeanmap.utils.Constants.EUROPE
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -46,8 +44,8 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
 @AndroidEntryPoint
+@OptIn(ExperimentalMaterialApi::class)
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<MainViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,13 +58,11 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     val countries by viewModel.locations.collectAsState()
-                    var country by remember {
-                        mutableStateOf<Country?>(null)
-                    }
+                    val selected by viewModel.selectedLocation.collectAsState()
+
                     val coroutineScope = rememberCoroutineScope()
 
                     val cameraPositionState = rememberCameraPositionState {
-
                         position = CameraPosition.fromLatLngZoom(EUROPE, 4f)
                     }
                     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
@@ -75,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
                     SideEffect {
                         coroutineScope.launch {
-                            if (country != null) {
+                            if (selected != null) {
                                 bottomSheetScaffoldState.bottomSheetState.expand()
                             } else {
                                 bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -86,8 +82,10 @@ class MainActivity : ComponentActivity() {
                     BottomSheetScaffold(
                         scaffoldState = bottomSheetScaffoldState,
                         sheetContent = {
-                            country?.let {
-                                CountrySheet(it)
+                            selected?.let {
+                                CountrySheet(it) { home ->
+                                    viewModel.setHome(home)
+                                }
                             }
                         }, sheetPeekHeight = 0.dp
                     ) {
@@ -95,22 +93,16 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize(),
                             cameraPositionState = cameraPositionState,
                             onMapClick = {
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                                }
+                                viewModel.selectLocation(null)
                             }
                         ) {
                             countries?.map { mCountry ->
                                 Marker(
                                     state = MarkerState(
-                                        position =
-                                        LatLng(mCountry.latlng.first(), mCountry.latlng[1])
+                                        position = mCountry.latLng
                                     ),
                                     onClick = {
-                                        country = mCountry
-                                        coroutineScope.launch {
-                                            bottomSheetScaffoldState.bottomSheetState.expand()
-                                        }
+                                        viewModel.selectLocation(country = mCountry)
                                         return@Marker false
                                     }
                                 )
@@ -125,7 +117,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun CountrySheet(country: Country) {
+fun CountrySheet(country: Country, setAsHomeClicked: (Country) -> Unit) {
     Box(
         Modifier
             .background(
@@ -157,6 +149,27 @@ fun CountrySheet(country: Country) {
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Light
             )
+
+            if (country.distanceFromHome != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Distance from home : ${country.distanceFromHome} KM",
+                    color = Color.Black,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            if (country.isHome.not()){
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = {
+                    setAsHomeClicked(country)
+                }) {
+                    Text(text = "Set as Home")
+                }
+            } else {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "Home Location")
+            }
         }
     }
 }

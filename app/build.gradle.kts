@@ -122,4 +122,5 @@ dependencies {
     implementation(Compose.swipeToRefresh)
     implementation(Maps.compose)
     implementation(Maps.services)
+    implementation("androidx.security:security-crypto-ktx:1.1.0-alpha03")
 }
