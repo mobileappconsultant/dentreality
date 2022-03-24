@@ -32,14 +32,18 @@ class MainViewModel @Inject constructor(
     private fun getLocationsFromAssets() {
         viewModelScope.launch {
             val data = getLocationsFromDeviceUseCase.execute()
+            val home = sharedPrefs.getHomeCountry()
             _locations.value = data?.map {
-                countryMapper.mapToPresentation(it)
+                countryMapper.mapToPresentation(it).copy(
+                    isHome = home?.name == it.name
+                )
             }
         }
     }
 
     fun setHome(country: Country) {
         sharedPrefs.saveHome(country)
+        getLocationsFromAssets()
         _selectedLocation.value = country.copy(distanceFromHome = null, isHome = true)
     }
 

@@ -7,4 +7,5 @@ object Constants {
         53.0000,
         9.0000
     )
+    const val INITIAL_ZOOM = 4f
 }

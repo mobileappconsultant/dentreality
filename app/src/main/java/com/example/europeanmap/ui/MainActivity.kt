@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,12 +29,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.europeanmap.R
 import com.example.europeanmap.ui.model.Country
 import com.example.europeanmap.ui.theme.EuropeanMapTheme
+import com.example.europeanmap.utils.BitmapUtils
 import com.example.europeanmap.utils.Constants.EUROPE
+import com.example.europeanmap.utils.Constants.INITIAL_ZOOM
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -63,7 +66,7 @@ class MainActivity : ComponentActivity() {
                     val coroutineScope = rememberCoroutineScope()
 
                     val cameraPositionState = rememberCameraPositionState {
-                        position = CameraPosition.fromLatLngZoom(EUROPE, 4f)
+                        position = CameraPosition.fromLatLngZoom(EUROPE, INITIAL_ZOOM)
                     }
                     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
                         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
@@ -97,10 +100,15 @@ class MainActivity : ComponentActivity() {
                             }
                         ) {
                             countries?.map { mCountry ->
+                                val icon = if (mCountry.isHome) BitmapUtils.bitmapDescriptor(
+                                    LocalContext.current,
+                                    R.drawable.ic_home_map_location
+                                ) else null
                                 Marker(
                                     state = MarkerState(
                                         position = mCountry.latLng
                                     ),
+                                    icon = icon,
                                     onClick = {
                                         viewModel.selectLocation(country = mCountry)
                                         return@Marker false
@@ -159,7 +167,7 @@ fun CountrySheet(country: Country, setAsHomeClicked: (Country) -> Unit) {
                     fontWeight = FontWeight.Medium
                 )
             }
-            if (country.isHome.not()){
+            if (country.isHome.not()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(onClick = {
                     setAsHomeClicked(country)
